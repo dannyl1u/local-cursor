@@ -1,6 +1,6 @@
-# lopilot
+# local cursor
 
-lopilot (**lo**cal co**pilot**)
+local and open-source cursor
 
 ## Features
 
