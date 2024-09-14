@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "lopilot.helloWorld",
-        "title": "Hello World"
+        "command": "extension.getAISuggestions",
+        "title": "GET AI CODE HELP!"
       }
     ]
   },

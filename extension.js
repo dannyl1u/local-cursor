@@ -1,36 +1,63 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const axios = require('axios');
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+const OLLAMA_API_URL = 'http://localhost:11434/api/generate';
 
 /**
- * @param {vscode.ExtensionContext} context
+ * Activates the extension.
+ * @param {vscode.ExtensionContext} context - The context in which the extension is activated.
  */
 function activate(context) {
+    let disposable = vscode.commands.registerCommand('extension.getAISuggestions', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const document = editor.document;
+            const selection = editor.selection;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "lopilot" is now active!');
+            const codeSnippet = document.getText(selection) || document.lineAt(selection.active.line).text;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('lopilot.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+            const suggestions = await getSuggestionsFromLLM(codeSnippet);
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from lopilot!');
-	});
+            vscode.window.showInformationMessage(suggestions);
+        }
+    });
 
-	context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
+/**
+ * Gets suggestions from the local LLM using the Ollama API.
+ * @param {string} codeSnippet - The code snippet to analyze.
+ * @returns {Promise<string>} The suggestion from the LLM.
+ */
+async function getSuggestionsFromLLM(codeSnippet) {
+    try {
+        const response = await axios.post(OLLAMA_API_URL, {
+            model: 'llama2-uncensored',
+            prompt: `Analyze and suggest improvements for the following code:\n\n${codeSnippet}`,
+            stream: false
+        });
+
+        const suggestion = response.data.response.trim();
+        return suggestion;
+    } catch (error) {
+        console.error('Error communicating with the Ollama API:', error);
+        if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+            console.error('Response headers:', error.response.headers);
+        }
+        return 'Unable to retrieve suggestions from the LLM.';
+    }
+}
+
+/**
+ * Deactivates the extension.
+ */
 function deactivate() {}
 
+// Export the activate and deactivate functions
 module.exports = {
-	activate,
-	deactivate
-}
+    activate,
+    deactivate
+};
