@@ -1,6 +1,6 @@
-# lopilot README
+# lopilot
 
-This is the README for your extension "lopilot". After writing up a brief description, we recommend including the following sections.
+lopilot (**lo**cal co**pilot**)
 
 ## Features
 
